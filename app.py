@@ -1,6 +1,7 @@
 import os
 import hashlib
 import csv
+import math
 from decimal import Decimal
 from flask import Flask, jsonify , request, session, render_template, redirect
 from flask_sqlalchemy import SQLAlchemy
@@ -72,6 +73,8 @@ def upload_page():
         file = request.files.get("file")
         if not file or not file.filename:
             return {"error": "No File selected"}, 400
+        if not file.filename.lower().endswith(".csv"):
+            return {"error": "Only CSV files are accepted"}, 400
         content = file.read()
         file_hash = hashlib.sha256(content).hexdigest()
         existing = Upload.query.filter_by(file_hash=file_hash).first()
@@ -79,8 +82,15 @@ def upload_page():
             log_action("UPLOAD_REJECTED", f"duplicate file: {file.filename}")
             db.session.commit()
             return {"error": "This file was already uploaded"}, 409
-        text = content.decode("utf-8").splitlines()
+        try:
+            text = content.decode("utf-8-sig").splitlines()
+        except UnicodeDecodeError:
+            return {"error": "File is not valid UTF-8 text"}, 400
         reader = csv.DictReader(text)
+        required = {"product", "batch_no", "parameter", "result", "lsl", "usl", "mfg_date"}
+        missing_headers = required - set(reader.fieldnames or [])
+        if missing_headers:
+            return {"error": "Missing columns", "details": [f"missing column: {h}" for h in sorted(missing_headers)]}, 400
         errors = []
         data_rows = []
         for line_number, row in enumerate(reader, start=2):
@@ -90,16 +100,30 @@ def upload_page():
             if not row.get("parameter"):
                 row_errors.append("parameter is empty")
             try:
-                float(row["result"])
+                result_value = float(row["result"])
+                if not math.isfinite(result_value):
+                    row_errors.append(f"result '{row.get('result')}' is not a finite number")
             except (ValueError, TypeError):
                 row_errors.append(f"result '{row.get('result')}' is not a number")
+            lsl_value = None
+            usl_value = None
             for col in ("lsl", "usl"):
                 value = row.get(col)
                 if value and value.strip():
                     try:
-                        float(value)
+                        parsed = float(value)
+                        if not math.isfinite(parsed):
+                            row_errors.append(f"{col} '{value}' is not a finite number")
+                        elif col == "lsl":
+                            lsl_value = parsed
+                        else:
+                            usl_value = parsed
                     except ValueError:
                         row_errors.append(f"{col} '{value}' is not a number")
+            if lsl_value is None and usl_value is None:
+                row_errors.append("no specification limit (need lsl or usl)")
+            if lsl_value is not None and usl_value is not None and lsl_value > usl_value:
+                row_errors.append(f"lsl {lsl_value} is greater than usl {usl_value}")
             try:
                 datetime.strptime(row["mfg_date"], "%Y-%m-%d")
             except (ValueError, TypeError):
@@ -113,6 +137,8 @@ def upload_page():
             db.session.commit()
             return {"error": "Invalid CSV", "details": errors}, 400
         row_count = len(data_rows)
+        if row_count == 0:
+            return {"error": "CSV has no data rows"}, 400
         print(f"filename: {file.filename}")
         print(f"hash: {file_hash}")
         print(f"rows: {row_count}")
@@ -144,8 +170,8 @@ def upload_page():
                 db.session.flush()
                 batch_cache[key] = batch
             db.session.add(Result(
-                batch_id=batch.id,
-                parameter=row["parameter"].strip(),
+        batch_id=batch.id,
+            parameter=row["parameter"].strip(),
                 unit=(row.get("unit") or "").strip(),
                 result=Decimal(row["result"]),
                 lsl=Decimal(row["lsl"]) if row["lsl"].strip() else None,

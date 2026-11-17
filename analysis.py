@@ -13,7 +13,7 @@ def check_spec(result, lsl, usl):
 def compute_stats(values, lsl, usl):
     values = [float(v) for v in values]
     avg = mean(values)
-    sigma = stdev(values)
+    sigma = stdev(values) if len(values) >= 2 else 0.0
     cpk = None
     if sigma > 0:
         sides = []
