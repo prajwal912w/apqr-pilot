@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>APQR Pilot: Paracetamol Tablets 500 mg</title>
+<script>try{document.documentElement.dataset.theme=localStorage.getItem('apqr-theme')||'dark';}catch(e){document.documentElement.dataset.theme='dark';}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{--paper:#FAF9F6;--ink:#1B1F23;--mute:#656A70;--rule:#DAD8D0;--teal:#0F6E6E;--red:#B3261E;--redbg:#F8E9E7;--amber:#A15C00;--green:#2E7D4F;--hover:#F1EFE8;--mean:#9AA0A6;--grid:#ECEAE3}
+[data-theme="dark"]{--paper:#1D1F1E;--ink:#F0EEE6;--mute:#A6A39A;--rule:#2E2E2B;--teal:#5FB3A8;--red:#FF7A6B;--redbg:#3A1B19;--amber:#E3A33B;--green:#6CC08B;--hover:#161615;--mean:#7C7A74;--grid:#1E1E1C;color-scheme:dark}
+*{box-sizing:border-box}
+input{accent-color:var(--teal)}
+#themebtn{background:none;border:1px solid var(--rule);color:var(--mute);font:12px "IBM Plex Mono",monospace;padding:4px 10px;cursor:pointer;border-radius:2px}
+#themebtn:hover{color:var(--ink);border-color:var(--mute)}
+body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.5 "IBM Plex Sans",system-ui,sans-serif}
+.num,td.n,.stat b{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+header{display:flex;align-items:baseline;gap:32px;padding:14px 40px;border-bottom:1px solid var(--rule)}
+header .brand{font:600 18px "Source Serif 4",serif}
+header nav{display:flex;gap:20px;flex:1}
+header nav a{text-decoration:none;color:var(--mute);padding-bottom:2px}
+header nav a[aria-current]{color:var(--ink);border-bottom:2px solid var(--teal)}
+header .who{color:var(--mute);font-size:13px}
+main{max-width:1280px;margin:0 auto;padding:32px 40px 64px}
+h1{font:600 30px/1.2 "Source Serif 4",serif;margin:0 0 4px}
+.period{color:var(--mute);margin:0 0 20px}
+.lede{font:400 20px/1.5 "Source Serif 4",serif;max-width:68ch;margin:0 0 32px}
+.lede mark{background:none;color:var(--red);font-weight:600}
+.lede em{font-style:normal;color:var(--amber);font-weight:600}
+.grid{display:grid;grid-template-columns:340px 1fr;gap:40px;align-items:start}
+@media(max-width:960px){.grid{grid-template-columns:1fr}main{padding:24px 20px}header{padding:12px 20px}}
+.ledger{border-top:1px solid var(--ink)}
+.ledger h2,.detail h2{font:600 13px "IBM Plex Sans";color:var(--mute);margin:10px 0 6px}
+.row{display:grid;grid-template-columns:1fr auto;gap:2px 12px;width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--rule);padding:12px 8px 12px 12px;cursor:pointer;font:inherit;color:inherit;border-left:3px solid transparent}
+.row:hover{background:var(--hover)}
+.row[aria-pressed=true]{border-left-color:var(--teal);background:var(--hover)}
+.row .nm{font-weight:500}
+.row .st{font-size:13px}
+.row svg{grid-row:1/3;grid-column:2;align-self:center}
+.s-pass{color:var(--green)}.s-oos{color:var(--red);font-weight:500}.s-trend{color:var(--amber);font-weight:500}
+.detail h3{font:600 24px "Source Serif 4",serif;margin:0}
+.detail .sub{color:var(--mute);margin:0 0 14px}
+.chartbox{position:relative;height:340px;border-top:1px solid var(--ink);border-bottom:1px solid var(--rule);padding:12px 0}
+.stats{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin:16px 0 8px}
+.stat span{display:block;font-size:13px;color:var(--mute)}
+.stat b{font-size:20px;font-weight:500}
+.note{color:var(--mute);font-size:13px;margin:0 0 28px}
+.concl{border-left:3px solid var(--teal);padding:2px 0 2px 16px;max-width:72ch;margin:0 0 36px}
+.concl h2{font:600 16px "Source Serif 4",serif;margin:0 0 4px;color:var(--ink)}
+.tools{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.tbl{max-height:360px;overflow:auto;border-top:1px solid var(--ink)}
+table{border-collapse:collapse;width:100%}
+th{position:sticky;top:0;background:var(--paper);text-align:left;font-weight:500;font-size:13px;color:var(--mute);padding:8px;border-bottom:1px solid var(--rule)}
+td{padding:7px 8px;border-bottom:1px solid var(--rule)}
+td.n,th.n{text-align:right}
+tr.oos td{background:var(--redbg)}tr.oos td:first-child{box-shadow:inset 3px 0 var(--red)}
+tr.oos td.res{color:var(--red);font-weight:500}
+footer{margin-top:40px;color:var(--mute);font-size:12px;border-top:1px solid var(--rule);padding-top:10px}
+
+/* ---- print (PDF export) ---- */
+.pbtn { font: 500 12px 'IBM Plex Mono', monospace; padding: 4px 12px; border: 1px solid var(--line); background: none; color: var(--mute); border-radius: 6px; cursor: pointer; margin-left: 12px; }
+.pbtn:hover { color: var(--ink); border-color: var(--mute); }
+#printreport { display: none; }
+@media print {
+  :root { color-scheme: light; }
+  html, body { background: #fff !important; }
+  body { color: #111 !important; font: 12px/1.45 "IBM Plex Sans", system-ui, sans-serif; }
+  body > header, body > main { display: none !important; }
+  #printreport { display: block !important; max-width: 100%; padding: 0; }
+  .rpt-head { border: 1.5px solid #111; padding: 14px 18px; margin-bottom: 18px; }
+  .rpt-head h1 { font: 600 20px "Source Serif 4", serif; margin: 0 0 2px; color: #111; }
+  .rpt-head .sub { font-size: 12px; color: #444; margin-bottom: 10px; }
+  .rpt-meta { width: 100%; border-collapse: collapse; font-size: 11px; }
+  .rpt-meta td { border-top: 1px solid #ccc; padding: 4px 8px 4px 0; vertical-align: top; }
+  .rpt-meta td.k { color: #666; width: 130px; font-family: "IBM Plex Mono", monospace; font-size: 10px; text-transform: uppercase; letter-spacing: .04em; }
+  .rpt-lede { font: 400 13.5px/1.5 "Source Serif 4", serif; margin: 0 0 16px; color: #111; }
+  .rpt-h { font: 600 11px "IBM Plex Mono", monospace; text-transform: uppercase; letter-spacing: .08em; color: #555; border-bottom: 1.5px solid #111; padding-bottom: 3px; margin: 18px 0 8px; }
+  table.rpt { width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 6px; }
+  table.rpt th { text-align: left; border-bottom: 1px solid #111; padding: 4px 6px; font-family: "IBM Plex Mono", monospace; font-size: 10px; text-transform: uppercase; letter-spacing: .04em; color: #333; }
+  table.rpt td { border-bottom: 1px solid #ddd; padding: 4px 6px; color: #111; }
+  table.rpt td.n, table.rpt th.n { text-align: right; font-variant-numeric: tabular-nums; }
+  table.rpt tr.oos td { background: #fdeeee; }
+  .stt { font-family: "IBM Plex Mono", monospace; font-size: 10px; font-weight: 500; }
+  .stt.oos { color: #b3261e; } .stt.trend { color: #8a6d00; } .stt.pass { color: #1e7d43; }
+  .rpt-chart { border: 1px solid #ccc; margin: 6px 0 4px; }
+  .rpt-chart img { width: 100%; display: block; }
+  .rpt-note { font-size: 10.5px; color: #555; margin: 2px 0 0; }
+  .rpt-concl { border-left: 2px solid #111; padding: 4px 0 4px 10px; font-size: 12px; color: #111; margin: 4px 0 0; }
+  .rpt-sign { display: flex; gap: 24px; margin-top: 26px; break-inside: avoid; }
+  .rpt-sign > div { flex: 1; border-top: 1px solid #111; padding-top: 4px; font-size: 10.5px; color: #444; }
+  .rpt-sign b { display: block; color: #111; font-size: 11px; }
+  .rpt-foot { margin-top: 12px; break-inside: avoid; border-top: 1px solid #ccc; padding-top: 6px; font: 10px "IBM Plex Mono", monospace; color: #666; display: flex; justify-content: space-between; }
+  .rpt-pagebreak { break-inside: avoid; }
+}
+</style>
+</head>
+<body>
+<header>
+  <span class="brand">APQR Pilot</span>
+  <nav><a href="/" aria-current="page">Review</a><a href="/upload">Upload data</a><a href="/audit">Audit trail</a><a href="/users">Users</a></nav>
+  <button id="themebtn" type="button">light</button>
+  <span class="who">{{ session.get('username', 'admin') }} · <a href="/logout">Log out</a></span>
+</header>
+<main>
+  <h1 id="prod"></h1>
+  <p class="period" id="period"></p>
+  <p class="lede" id="lede"></p>
+  <div class="grid">
+    <section class="ledger" aria-label="Parameters"><h2>Parameters, worst first</h2><div id="ledger"></div></section>
+    <section class="detail">
+      <h3 id="pname"></h3><p class="sub" id="psub"></p>
+      <div class="chartbox"><canvas id="chart" aria-label="Trend chart"></canvas></div>
+      <div class="stats" id="stats"></div>
+      <p class="note" id="note"></p>
+      <div class="concl"><h2>Conclusion</h2><p id="concl"></p></div>
+      <div class="tools"><h2 style="margin:0;font:600 16px 'Source Serif 4',serif">Batch results</h2>
+        <div><label><input type="checkbox" id="onlyoos"> Show only OOS</label>
+        <button id="printbtn" class="pbtn" type="button">Download PDF</button></div></div>
+      <div class="tbl"><table><thead><tr><th>Batch</th><th>Mfg date</th><th class="n">Result</th><th class="n">LSL</th><th class="n">USL</th><th>Status</th></tr></thead><tbody id="tb"></tbody></table></div>
+    </section>
+  </div>
+  <footer id="foot"></footer>
+</main>
+<div id="printreport"></div>
+<script>
+/* FLASK: replace the demo with   window.APQR = {{ data|tojson }};
+   Shape: {product, report_id, file_hash, params:[{name, unit, rows:[{batch, date, result, lsl|null, usl|null}]}]}
+   Statistics below are for the preview only. In the real app compute them in Python and pass them in. */
+window.APQR = {{ data|tojson }};
+const DATA = window.APQR || demo();
+function demo(){
+  const d0=new Date('2026-01-05'),mk=(name,unit,lsl,usl,f)=>({name,unit,rows:Array.from({length:30},(_,i)=>{const d=new Date(d0);d.setDate(d.getDate()+i*11);
+    return{batch:'PCT26'+String(i+1).padStart(2,'0'),date:d.toISOString().slice(0,10),result:+f(i).toFixed(2),lsl,usl}})});
+  return{product:'Paracetamol Tablets 500 mg',report_id:'APQR-2026-0001',file_hash:'9f3ac2e41b7d',params:[
+    mk('Assay','%',95,105,i=>97+i*0.2+0.05*Math.sin(i*2.3)),
+    mk('Dissolution (30 min)','%',80,null,i=>i==5?76.5:89+2.5*Math.sin(i*1.7)+1.2*Math.cos(i*.9)),
+    mk('Total Impurities','%',null,1,i=>i==2?1.12:i==8?1.05:.42+.14*Math.sin(i*1.3)),
+    mk('Water Content (KF)','%',null,5,i=>2.1+.4*Math.sin(i*2.1))]}}
+
+if(!DATA.params || !DATA.params.length || !DATA.params.some(p=>p.rows && p.rows.length)){
+  document.getElementById('prod').textContent = DATA.product || 'APQR Pilot';
+  document.getElementById('period').textContent = 'No batch data uploaded yet';
+  document.getElementById('lede').textContent = 'Upload a CSV from the Upload data page and the APQR summary will appear here.';
+  document.querySelector('.grid').style.display = 'none';
+  document.getElementById('foot').textContent = `Report ${DATA.report_id || 'DRAFT'}, generated ${new Date().toLocaleString('en-GB')}`;
+}else{
+
+const cv=n=>getComputedStyle(document.documentElement).getPropertyValue('--'+n).trim();
+const $=s=>document.querySelector(s),f2=x=>x==null||isNaN(x)?'n/a':x.toFixed(2);
+const isOOS=r=>(r.lsl!=null&&r.result<r.lsl)||(r.usl!=null&&r.result>r.usl);
+const fmt=d=>new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+function stats(rows){const v=rows.map(r=>r.result),n=v.length,m=v.reduce((a,b)=>a+b)/n,
+  sd=n>1?Math.sqrt(v.reduce((a,b)=>a+(b-m)**2,0)/(n-1)):NaN,L=rows[n-1],c=[];
+  if(L.usl!=null)c.push((L.usl-m)/(3*sd));if(L.lsl!=null)c.push((m-L.lsl)/(3*sd));
+  return{n,m,sd,min:Math.min(...v),max:Math.max(...v),cpk:c.length&&sd>0?Math.min(...c):null}}
+function run(v){let best=1,bd=0,bs=0,cur=1,d=0;for(let i=1;i<v.length;i++){const s=Math.sign(v[i]-v[i-1]);
+  if(s&&s===d)cur++;else{cur=s?2:1;d=s}if(cur>best){best=cur;bd=d;bs=i-cur+1}}return{len:best,dir:bd,start:bs}}
+DATA.params.forEach(p=>{p.s=stats(p.rows);p.oos=p.rows.filter(isOOS);p.tr=run(p.rows.map(r=>r.result));
+  p.trend=p.tr.len>=6;p.state=p.oos.length?'oos':p.trend?'trend':'pass';
+  p.label={oos:p.oos.length+' OOS',trend:(p.tr.dir>0?'Rising':'Falling')+' trend, '+p.tr.len+' batches',pass:'Pass'}[p.state]});
+DATA.params.sort((a,b)=>['oos','trend','pass'].indexOf(a.state)-['oos','trend','pass'].indexOf(b.state));
+
+const all=DATA.params.flatMap(p=>p.rows),dates=all.map(r=>r.date).sort(),nb=DATA.params[0].rows.length,
+  nOOS=DATA.params.reduce((a,p)=>a+p.oos.length,0),tp=DATA.params.filter(p=>p.trend);
+$('#prod').textContent=DATA.product;
+$('#period').textContent=`Annual product quality review, ${fmt(dates[0])} to ${fmt(dates.at(-1))}`;
+$('#lede').innerHTML=`${nb} batches, ${DATA.params.length} parameters. `+
+ (nOOS?`<mark>${nOOS} result${nOOS>1?'s':''} out of specification.</mark> `:'No results out of specification. ')+
+ (tp.length?`<em>${tp.map(p=>p.name).join(' and ')}</em> ${tp.length>1?'are':'is'} still within limits but moving steadily toward one.`:'No adverse trends detected.');
+
+function spark(p){const v=p.rows.map(r=>r.result),lo=Math.min(...v),hi=Math.max(...v),w=84,h=26,
+  y=x=>h-3-(x-lo)/((hi-lo)||1)*(h-6),pts=v.map((x,i)=>`${(i/(v.length-1)*w).toFixed(1)},${y(x).toFixed(1)}`).join(' ');
+  const dots=p.rows.map((r,i)=>isOOS(r)?`<circle cx="${(i/(v.length-1)*w).toFixed(1)}" cy="${y(r.result).toFixed(1)}" r="2.5" fill="${cv('red')}"/>`:'').join('');
+  return `<svg width="${w}" height="${h}" aria-hidden="true"><polyline points="${pts}" fill="none" stroke="${cv('mute')}" stroke-width="1.2"/>${dots}</svg>`}
+$('#ledger').innerHTML=DATA.params.map((p,i)=>`<button class="row" data-i="${i}" aria-pressed="false"><span class="nm">${p.name}</span>${spark(p)}<span class="st s-${p.state}">${p.label}<span class="num" style="color:var(--mute)"> · Cpk ${f2(p.s.cpk)}</span></span></button>`).join('');
+
+Chart.defaults.color=cv('mute');
+let chart,cur=0;
+function show(i){cur=i;const p=DATA.params[i],s=p.s,rows=p.rows;
+  document.querySelectorAll('.row').forEach((b,j)=>b.setAttribute('aria-pressed',j==i));
+  $('#pname').textContent=p.name;
+  const lim=[rows.at(-1).lsl!=null?'LSL '+rows.at(-1).lsl:'',rows.at(-1).usl!=null?'USL '+rows.at(-1).usl:''].filter(Boolean).join(', ');
+  $('#psub').textContent=`${lim} (${p.unit}), ${rows.at(-1).lsl!=null&&rows.at(-1).usl!=null?'two-sided':'one-sided'} limit`;
+  $('#stats').innerHTML=[['Batches',s.n],['Mean',f2(s.m)],['Std dev',f2(s.sd)],['Min',f2(s.min)],['Max',f2(s.max)],['Cpk',f2(s.cpk)]].map(([k,v])=>`<div class="stat"><span>${k}</span><b>${v}</b></div>`).join('');
+  $('#note').textContent=s.cpk==null?'':s.cpk<1?'Cpk below 1.00: the process is not capable of meeting this limit consistently.':s.cpk<1.33?'Cpk between 1.00 and 1.33: marginal capability.':'Cpk at or above 1.33: capable.';
+  const t=p.trend?` Results have moved ${p.tr.dir>0?'upward':'downward'} for ${p.tr.len} consecutive batches (from ${rows[p.tr.start].batch}); review before a limit is reached.`:'';
+  $('#concl').textContent=`${p.name}: ${s.n} batches, mean ${f2(s.m)} ${p.unit}, SD ${f2(s.sd)}, range ${f2(s.min)} to ${f2(s.max)}. `+
+    (p.oos.length?`${p.oos.length} OOS result${p.oos.length>1?'s':''} (${p.oos.map(r=>r.batch).join(', ')}); investigation required. `:'All results are within specification. ')+`Cpk is ${f2(s.cpk)}.`+t;
+  const lab=rows.map(r=>r.batch),ds=(l,d,c,x={})=>({label:l,data:d,borderColor:c,backgroundColor:c,pointRadius:0,borderWidth:1.2,...x});
+  chart&&chart.destroy();
+  chart=new Chart($('#chart'),{type:'line',data:{labels:lab,datasets:[
+    ds('Result',rows.map(r=>r.result),cv('ink'),{borderWidth:1.6,pointStyle:'rect',pointRadius:rows.map(r=>isOOS(r)?6:3),pointBackgroundColor:rows.map(r=>isOOS(r)?cv('red'):cv('ink')),pointBorderColor:rows.map(r=>isOOS(r)?cv('red'):cv('ink')),
+      segment:{borderColor:c=>p.trend&&c.p0DataIndex>=p.tr.start?cv('amber'):cv('ink')}}),
+    ...(rows.some(r=>r.lsl!=null)?[ds('LSL',rows.map(r=>r.lsl),cv('red'),{borderDash:[6,4],stepped:true})]:[]),
+    ...(rows.some(r=>r.usl!=null)?[ds('USL',rows.map(r=>r.usl),cv('red'),{borderDash:[6,4],stepped:true})]:[]),
+    ds('Mean',rows.map(()=>s.m),cv('mean'),{borderDash:[2,3]})]},
+   options:{responsive:true,maintainAspectRatio:false,animation:false,interaction:{mode:'index',intersect:false},
+    plugins:{legend:{position:'top',align:'start',labels:{boxWidth:18,boxHeight:1,font:{family:'IBM Plex Sans',size:12}}},
+      tooltip:{callbacks:{afterBody:ctx=>{const r=rows[ctx[0].dataIndex];return fmt(r.date)+(isOOS(r)?'\nOUT OF SPECIFICATION':'')}}}},
+    scales:{x:{ticks:{maxTicksLimit:10,font:{family:'IBM Plex Mono',size:11}},grid:{display:false}},
+            y:{title:{display:true,text:p.unit},ticks:{font:{family:'IBM Plex Mono',size:11}},grid:{color:cv('grid')}}}}});
+  table()}
+function table(){const p=DATA.params[cur],only=$('#onlyoos').checked;
+  $('#tb').innerHTML=p.rows.filter(r=>!only||isOOS(r)).map(r=>`<tr class="${isOOS(r)?'oos':''}"><td class="n" style="text-align:left">${r.batch}</td><td>${fmt(r.date)}</td><td class="n res">${r.result}</td><td class="n">${r.lsl??''}</td><td class="n">${r.usl??''}</td><td>${isOOS(r)?'OOS':'Pass'}</td></tr>`).join('')||'<tr><td colspan="6">No OOS results for this parameter.</td></tr>'}
+$('#ledger').addEventListener('click',e=>{const b=e.target.closest('.row');b&&show(+b.dataset.i)});
+$('#onlyoos').addEventListener('change',table);
+$('#foot').textContent=`Report ${DATA.report_id}, source file hash ${DATA.file_hash}, generated ${new Date().toLocaleString('en-GB')}`;
+$('#themebtn').addEventListener('click',()=>{
+  const next=document.documentElement.dataset.theme==='dark'?'light':'dark';
+  document.documentElement.dataset.theme=next;
+  try{localStorage.setItem('apqr-theme',next);}catch(e){}
+  $('#themebtn').textContent=next==='dark'?'light':'dark';
+  Chart.defaults.color=cv('mute');
+  $('#ledger').innerHTML=DATA.params.map((p,i)=>`<button class="row" data-i="${i}" aria-pressed="false"><span class="nm">${p.name}</span>${spark(p)}<span class="st s-${p.state}">${p.label}<span class="num" style="color:var(--mute)"> · Cpk ${f2(p.s.cpk)}</span></span></button>`).join('');
+  show(cur);
+});
+$('#themebtn').textContent=document.documentElement.dataset.theme==='dark'?'light':'dark';
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;')}
+function buildReport(){
+  const p0=DATA.params[cur]||DATA.params[0];
+  const all=DATA.params.flatMap(p=>p.rows),dates=all.map(r=>r.date).sort();
+  const nb=all.length?p0.rows.length:0;
+  const rows=DATA.params.map(p=>{const st=p.state==='oos'?'oos':p.state==='trend'?'trend':'pass';
+    const lsl=p.rows[0].lsl,usl=p.rows[0].usl;
+    return `<tr class="${st==='oos'?'oos':''}"><td>${esc(p.name)}</td><td>${esc(p.unit)}</td><td class="n">${lsl??'-'}</td><td class="n">${usl??'-'}</td><td class="n">${f2(p.s.m)}</td><td class="n">${f2(p.s.sd)}</td><td class="n">${f2(p.s.min)}</td><td class="n">${f2(p.s.max)}</td><td class="n">${p.s.cpk==null?'n/a':f2(p.s.cpk)}</td><td class="n">${p.oos.length}</td><td><span class="stt ${st}">${st.toUpperCase()}</span></td></tr>`}).join('');
+  const chartImg=(()=>{try{return document.getElementById('chart').toDataURL('image/png')}catch(e){return null}})();
+  const batchRows=p0.rows.map(r=>`<tr class="${isOOS(r)?'oos':''}"><td>${esc(r.batch)}</td><td>${fmt(r.date)}</td><td class="n">${r.result}</td><td class="n">${r.lsl??''}</td><td class="n">${r.usl??''}</td><td>${isOOS(r)?'OOS':'Pass'}</td></tr>`).join('');
+  const ai=DATA.ai_conclusion?`<div class="rpt-h">AI-assisted review</div><p class="rpt-concl">${esc(DATA.ai_conclusion)}</p>`:'';
+  $('#printreport').innerHTML=`
+  <div class="rpt-head">
+    <h1>Annual Product Quality Review</h1>
+    <div class="sub">${esc(DATA.product)}</div>
+    <table class="rpt-meta">
+      <tr><td class="k">Report ID</td><td>${esc(DATA.report_id)}</td><td class="k">Review period</td><td>${dates.length?fmt(dates[0])+' to '+fmt(dates.at(-1)):'-'}</td></tr>
+      <tr><td class="k">Batches reviewed</td><td>${nb}</td><td class="k">Parameters</td><td>${DATA.params.length}</td></tr>
+      <tr><td class="k">Source file hash</td><td>${esc(DATA.file_hash)}</td><td class="k">Generated</td><td>${new Date().toLocaleString('en-GB')}</td></tr>
+    </table>
+  </div>
+  <p class="rpt-lede">${$('#lede').textContent}</p>
+  <div class="rpt-h">Summary of parameters</div>
+  <table class="rpt"><thead><tr><th>Parameter</th><th>Unit</th><th class="n">LSL</th><th class="n">USL</th><th class="n">Mean</th><th class="n">SD</th><th class="n">Min</th><th class="n">Max</th><th class="n">Cpk</th><th class="n">OOS</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table>
+  <div class="rpt-pagebreak">
+  <div class="rpt-h">Trend chart - ${esc(p0.name)}</div>
+  ${chartImg?`<div class="rpt-chart"><img src="${chartImg}" alt="Trend chart"></div>`:''}
+  <p class="rpt-note">${esc($('#note').textContent||'')}</p>
+  </div>
+  <div class="rpt-pagebreak">
+  <div class="rpt-h">Batch results - ${esc(p0.name)}</div>
+  <table class="rpt"><thead><tr><th>Batch</th><th>Mfg date</th><th class="n">Result</th><th class="n">LSL</th><th class="n">USL</th><th>Status</th></tr></thead><tbody>${batchRows}</tbody></table>
+  </div>
+  <div class="rpt-h">Conclusion</div>
+  <p class="rpt-concl">${esc($('#concl').textContent)}</p>
+  ${ai}
+  <div class="rpt-sign"><div><b>Prepared by</b>Name / Signature / Date</div><div><b>Reviewed by</b>Name / Signature / Date</div><div><b>Approved by</b>Name / Signature / Date</div></div>
+  <div class="rpt-foot"><span>${esc(DATA.report_id)}</span><span>APQR Pilot - dummy data for demonstration</span></div>`;
+}
+function doPrint(){
+  const was=document.documentElement.dataset.theme;
+  document.documentElement.dataset.theme='light';
+  show(cur);
+  buildReport();
+  setTimeout(()=>{window.print();document.documentElement.dataset.theme=was;show(cur);},200);
+}
+$('#printbtn').addEventListener('click',doPrint);
+window.addEventListener('beforeprint',()=>{const was=document.documentElement.dataset.theme;document.documentElement.dataset.theme='light';show(cur);buildReport();});
+window.addEventListener('afterprint',()=>{const was=document.documentElement.dataset.theme;});
+show(0);
+if(DATA.ai_conclusion){
+  const ai=document.createElement('p');
+  ai.style.cssText='margin-top:10px;padding-top:8px;border-top:1px dashed var(--line);font-style:italic;color:var(--mute)';
+  ai.innerHTML='AI review:<br>'+esc(DATA.ai_conclusion).replace(/\n/g,'<br>');
+  document.querySelector('.concl').appendChild(ai);
+}
+}
+
+</script>
+</body>
+</html>

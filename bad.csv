@@ -1,0 +1,4 @@
+product,batch_no,mfg_date,parameter,unit,result,lsl,usl
+Paracetamol Tablets 500 mg,PCT9901,2026-05-01,Assay,%,,95.0,105.0
+Paracetamol Tablets 500 mg,PCT9902,32-13-2026,Assay,%,99.1,95.0,105.0
+Paracetamol Tablets 500 mg,PCT9903,2026-05-01,Assay,%,high,95.0,105.0

@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}APQR Pilot - Upload{% endblock %}
+{% block content %}
+<div class="max-w-2xl">
+  <h1 class="font-serif text-2xl font-semibold tracking-tight">Upload batch results</h1>
+  <p class="text-faint text-sm mt-1 mb-8">
+    CSV columns: <code class="font-mono text-xs">product, batch_no, mfg_date, parameter, unit, result, lsl, usl</code>.
+    One row per parameter result. Validation is all-or-nothing: if any row is invalid, nothing is saved.
+  </p>
+
+  <form id="upload-form" method="post" enctype="multipart/form-data" class="flex items-end gap-4">
+    <div class="grow">
+      <label for="file" class="section-label !mb-1">CSV file</label>
+      <input type="file" id="file" name="file" accept=".csv" required
+             class="block w-full text-sm file:mr-4 file:py-2 file:px-4 file:border file:border-hairline file:bg-paper file:text-ink file:font-sans file:text-sm file:cursor-pointer hover:file:border-teal">
+    </div>
+    <button type="submit" class="btn-primary">Upload &amp; validate</button>
+  </form>
+
+  <div id="result" class="mt-8"></div>
+</div>
+
+<script>
+/* fetch instead of HTMX here: file upload plus structured JSON errors is
+   simpler as one fetch than teaching HTMX to carry multipart + parse JSON. */
+const box = document.getElementById('result');
+document.getElementById('upload-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  box.innerHTML = '<p class="text-sm text-faint">Validating&hellip;</p>';
+  try {
+    const res = await fetch('/upload', { method: 'POST', body: new FormData(e.target) });
+    const data = await res.json();
+    if (res.ok) {
+      box.innerHTML = `<div class="verify-banner ok">${data.message}. Saved to the review period.</div>`;
+      return;
+    }
+    if (res.status === 409) {
+      box.innerHTML = `<div class="verify-banner warn">${data.error}. The SHA-256 hash matched an earlier upload, so it was rejected as a duplicate.</div>`;
+      return;
+    }
+    if (data.details) {
+      const rows = data.details.map(d => typeof d === 'string'
+        ? `<tr><td colspan="4">${d}</td></tr>`
+        : `<tr><td class="num">${d.line}</td><td class="font-mono text-xs">${d.column}</td><td>${d.problem}</td><td class="text-faint">${d.hint}</td></tr>`).join('');
+      box.innerHTML = `
+        <p class="text-sm mb-3"><span class="badge oos">Rejected</span> ${data.details.length} problem(s) found. Nothing was saved &mdash; fix the CSV and upload it again.</p>
+        <div class="border border-hairline overflow-x-auto">
+          <table class="results">
+            <thead><tr><th class="num">Line</th><th>Column</th><th>Problem</th><th>Suggested fix</th></tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>`;
+      return;
+    }
+    box.innerHTML = `<div class="verify-banner fail">${data.error || 'Upload failed.'}</div>`;
+  } catch (err) {
+    box.innerHTML = '<div class="verify-banner fail">Upload failed - is the server running?</div>';
+  }
+});
+</script>
+{% endblock %}

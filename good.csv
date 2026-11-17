@@ -1,0 +1,121 @@
+product,batch_no,mfg_date,parameter,unit,result,lsl,usl
+Paracetamol Tablets 500 mg,PCT2601,2026-01-05,Assay,%,96.86,95.0,105.0
+Paracetamol Tablets 500 mg,PCT2601,2026-01-05,Dissolution (30 min),%,86.3,80,
+Paracetamol Tablets 500 mg,PCT2601,2026-01-05,Total Impurities,%,0.26,,1.0
+Paracetamol Tablets 500 mg,PCT2601,2026-01-05,Water Content (KF),%,2.1,,5.0
+Paracetamol Tablets 500 mg,PCT2602,2026-01-17,Assay,%,97.14,95.0,105.0
+Paracetamol Tablets 500 mg,PCT2602,2026-01-17,Dissolution (30 min),%,92.8,80,
+Paracetamol Tablets 500 mg,PCT2602,2026-01-17,Total Impurities,%,0.51,,1.0
+Paracetamol Tablets 500 mg,PCT2602,2026-01-17,Water Content (KF),%,1.9,,5.0
+Paracetamol Tablets 500 mg,PCT2603,2026-01-29,Assay,%,97.27,95.0,105.0
+Paracetamol Tablets 500 mg,PCT2603,2026-01-29,Dissolution (30 min),%,86.3,80,
+Paracetamol Tablets 500 mg,PCT2603,2026-01-29,Total Impurities,%,106.3,,1.0
+Paracetamol Tablets 500 mg,PCT2603,2026-01-29,Water Content (KF),%,2.5,,5.0
+Paracetamol Tablets 500 mg,PCT2604,2026-02-10,Assay,%,97.36,95.0,105.0
+Paracetamol Tablets 500 mg,PCT2604,2026-02-10,Dissolution (30 min),%,88.0,80,
+Paracetamol Tablets 500 mg,PCT2604,2026-02-10,Total Impurities,%,0.41,,1.0
+Paracetamol Tablets 500 mg,PCT2604,2026-02-10,Water Content (KF),%,2.6,,5.0
+Paracetamol Tablets 500 mg,PCT2605,2026-02-22,Assay,%,97.69,95.0,105.0
+Paracetamol Tablets 500 mg,PCT2605,2026-02-22,Dissolution (30 min),%,91.9,80,
+Paracetamol Tablets 500 mg,PCT2605,2026-02-22,Total Impurities,%,0.47,,1.0
+Paracetamol Tablets 500 mg,PCT2605,2026-02-22,Water Content (KF),%,1.8,,5.0
+Paracetamol Tablets 500 mg,PCT2606,2026-03-06,Assay,%,98.17,95.0,105.0
+Paracetamol Tablets 500 mg,PCT2606,2026-03-06,Dissolution (30 min),%,74.8,80,
+Paracetamol Tablets 500 mg,PCT2606,2026-03-06,Total Impurities,%,0.29,,1.0
+Paracetamol Tablets 500 mg,PCT2606,2026-03-06,Water Content (KF),%,2.0,,5.0
+Paracetamol Tablets 500 mg,PCT2607,2026-03-18,Assay,%,98.48,95.0,105.0
+Paracetamol Tablets 500 mg,PCT2607,2026-03-18,Dissolution (30 min),%,89.4,80,
+Paracetamol Tablets 500 mg,PCT2607,2026-03-18,Total Impurities,%,0.19,,1.0
+Paracetamol Tablets 500 mg,PCT2607,2026-03-18,Water Content (KF),%,1.9,,5.0
+Paracetamol Tablets 500 mg,PCT2608,2026-03-30,Assay,%,98.69,95.0,105.0
+Paracetamol Tablets 500 mg,PCT2608,2026-03-30,Dissolution (30 min),%,92.0,80,
+Paracetamol Tablets 500 mg,PCT2608,2026-03-30,Total Impurities,%,0.47,,1.0
+Paracetamol Tablets 500 mg,PCT2608,2026-03-30,Water Content (KF),%,2.8,,5.0
+Paracetamol Tablets 500 mg,PCT2609,2026-04-11,Assay,%,98.81,95.0,105.0
+Paracetamol Tablets 500 mg,PCT2609,2026-04-11,Dissolution (30 min),%,95.7,80,
+Paracetamol Tablets 500 mg,PCT2609,2026-04-11,Total Impurities,%,1.12,,1.0
+Paracetamol Tablets 500 mg,PCT2609,2026-04-11,Water Content (KF),%,2.6,,5.0
+Paracetamol Tablets 500 mg,PCT2610,2026-04-23,Assay,%,99.18,95.0,105.0
+Paracetamol Tablets 500 mg,PCT2610,2026-04-23,Dissolution (30 min),%,92.2,80,
+Paracetamol Tablets 500 mg,PCT2610,2026-04-23,Total Impurities,%,0.49,,1.0
+Paracetamol Tablets 500 mg,PCT2610,2026-04-23,Water Content (KF),%,2.6,,5.0
+Paracetamol Tablets 500 mg,PCT2611,2026-05-05,Assay,%,99.38,95.0,105.0
+Paracetamol Tablets 500 mg,PCT2611,2026-05-05,Dissolution (30 min),%,86.5,80,
+Paracetamol Tablets 500 mg,PCT2611,2026-05-05,Total Impurities,%,0.24,,1.0
+Paracetamol Tablets 500 mg,PCT2611,2026-05-05,Water Content (KF),%,2.2,,5.0
+Paracetamol Tablets 500 mg,PCT2612,2026-05-17,Assay,%,99.38,95.0,105.0
+Paracetamol Tablets 500 mg,PCT2612,2026-05-17,Dissolution (30 min),%,88.3,80,
+Paracetamol Tablets 500 mg,PCT2612,2026-05-17,Total Impurities,%,0.19,,1.0
+Paracetamol Tablets 500 mg,PCT2612,2026-05-17,Water Content (KF),%,2.2,,5.0
+Paracetamol Tablets 500 mg,PCT2613,2026-05-29,Assay,%,99.85,95.0,105.0
+Paracetamol Tablets 500 mg,PCT2613,2026-05-29,Dissolution (30 min),%,89.6,80,
+Paracetamol Tablets 500 mg,PCT2613,2026-05-29,Total Impurities,%,0.3,,1.0
+Paracetamol Tablets 500 mg,PCT2613,2026-05-29,Water Content (KF),%,2.1,,5.0
+Paracetamol Tablets 500 mg,PCT2614,2026-06-10,Assay,%,99.96,95.0,105.0
+Paracetamol Tablets 500 mg,PCT2614,2026-06-10,Dissolution (30 min),%,95.4,80,
+Paracetamol Tablets 500 mg,PCT2614,2026-06-10,Total Impurities,%,0.41,,1.0
+Paracetamol Tablets 500 mg,PCT2614,2026-06-10,Water Content (KF),%,2.7,,5.0
+Paracetamol Tablets 500 mg,PCT2615,2026-06-22,Assay,%,100.17,95.0,105.0
+Paracetamol Tablets 500 mg,PCT2615,2026-06-22,Dissolution (30 min),%,93.3,80,
+Paracetamol Tablets 500 mg,PCT2615,2026-06-22,Total Impurities,%,0.22,,1.0
+Paracetamol Tablets 500 mg,PCT2615,2026-06-22,Water Content (KF),%,2.3,,5.0
+Paracetamol Tablets 500 mg,PCT2616,2026-07-04,Assay,%,100.75,95.0,105.0
+Paracetamol Tablets 500 mg,PCT2616,2026-07-04,Dissolution (30 min),%,92.4,80,
+Paracetamol Tablets 500 mg,PCT2616,2026-07-04,Total Impurities,%,0.37,,1.0
+Paracetamol Tablets 500 mg,PCT2616,2026-07-04,Water Content (KF),%,2.8,,5.0
+Paracetamol Tablets 500 mg,PCT2617,2026-07-16,Assay,%,100.94,95.0,105.0
+Paracetamol Tablets 500 mg,PCT2617,2026-07-16,Dissolution (30 min),%,93.8,80,
+Paracetamol Tablets 500 mg,PCT2617,2026-07-16,Total Impurities,%,0.24,,1.0
+Paracetamol Tablets 500 mg,PCT2617,2026-07-16,Water Content (KF),%,1.8,,5.0
+Paracetamol Tablets 500 mg,PCT2618,2026-07-28,Assay,%,100.98,95.0,105.0
+Paracetamol Tablets 500 mg,PCT2618,2026-07-28,Dissolution (30 min),%,88.7,80,
+Paracetamol Tablets 500 mg,PCT2618,2026-07-28,Total Impurities,%,0.23,,1.0
+Paracetamol Tablets 500 mg,PCT2618,2026-07-28,Water Content (KF),%,3.1,,5.0
+Paracetamol Tablets 500 mg,PCT2619,2026-08-09,Assay,%,101.45,95.0,105.0
+Paracetamol Tablets 500 mg,PCT2619,2026-08-09,Dissolution (30 min),%,89.1,80,
+Paracetamol Tablets 500 mg,PCT2619,2026-08-09,Total Impurities,%,0.41,,1.0
+Paracetamol Tablets 500 mg,PCT2619,2026-08-09,Water Content (KF),%,2.4,,5.0
+Paracetamol Tablets 500 mg,PCT2620,2026-08-21,Assay,%,101.72,95.0,105.0
+Paracetamol Tablets 500 mg,PCT2620,2026-08-21,Dissolution (30 min),%,90.6,80,
+Paracetamol Tablets 500 mg,PCT2620,2026-08-21,Total Impurities,%,0.26,,1.0
+Paracetamol Tablets 500 mg,PCT2620,2026-08-21,Water Content (KF),%,2.1,,5.0
+Paracetamol Tablets 500 mg,PCT2621,2026-09-02,Assay,%,101.82,95.0,105.0
+Paracetamol Tablets 500 mg,PCT2621,2026-09-02,Dissolution (30 min),%,88.6,80,
+Paracetamol Tablets 500 mg,PCT2621,2026-09-02,Total Impurities,%,0.38,,1.0
+Paracetamol Tablets 500 mg,PCT2621,2026-09-02,Water Content (KF),%,3.1,,5.0
+Paracetamol Tablets 500 mg,PCT2622,2026-09-14,Assay,%,102.01,95.0,105.0
+Paracetamol Tablets 500 mg,PCT2622,2026-09-14,Dissolution (30 min),%,88.2,80,
+Paracetamol Tablets 500 mg,PCT2622,2026-09-14,Total Impurities,%,0.55,,1.0
+Paracetamol Tablets 500 mg,PCT2622,2026-09-14,Water Content (KF),%,2.5,,5.0
+Paracetamol Tablets 500 mg,PCT2623,2026-09-26,Assay,%,102.14,95.0,105.0
+Paracetamol Tablets 500 mg,PCT2623,2026-09-26,Dissolution (30 min),%,86.5,80,
+Paracetamol Tablets 500 mg,PCT2623,2026-09-26,Total Impurities,%,0.19,,1.0
+Paracetamol Tablets 500 mg,PCT2623,2026-09-26,Water Content (KF),%,2.7,,5.0
+Paracetamol Tablets 500 mg,PCT2624,2026-10-08,Assay,%,102.67,95.0,105.0
+Paracetamol Tablets 500 mg,PCT2624,2026-10-08,Dissolution (30 min),%,90.2,80,
+Paracetamol Tablets 500 mg,PCT2624,2026-10-08,Total Impurities,%,0.18,,1.0
+Paracetamol Tablets 500 mg,PCT2624,2026-10-08,Water Content (KF),%,2.3,,5.0
+Paracetamol Tablets 500 mg,PCT2625,2026-10-20,Assay,%,103.0,95.0,105.0
+Paracetamol Tablets 500 mg,PCT2625,2026-10-20,Dissolution (30 min),%,91.3,80,
+Paracetamol Tablets 500 mg,PCT2625,2026-10-20,Total Impurities,%,0.54,,1.0
+Paracetamol Tablets 500 mg,PCT2625,2026-10-20,Water Content (KF),%,3.0,,5.0
+Paracetamol Tablets 500 mg,PCT2626,2026-11-01,Assay,%,102.85,95.0,105.0
+Paracetamol Tablets 500 mg,PCT2626,2026-11-01,Dissolution (30 min),%,93.2,80,
+Paracetamol Tablets 500 mg,PCT2626,2026-11-01,Total Impurities,%,0.42,,1.0
+Paracetamol Tablets 500 mg,PCT2626,2026-11-01,Water Content (KF),%,2.6,,5.0
+Paracetamol Tablets 500 mg,PCT2627,2026-11-13,Assay,%,103.21,95.0,105.0
+Paracetamol Tablets 500 mg,PCT2627,2026-11-13,Dissolution (30 min),%,92.4,80,
+Paracetamol Tablets 500 mg,PCT2627,2026-11-13,Total Impurities,%,0.19,,1.0
+Paracetamol Tablets 500 mg,PCT2627,2026-11-13,Water Content (KF),%,2.4,,5.0
+Paracetamol Tablets 500 mg,PCT2628,2026-11-25,Assay,%,103.53,95.0,105.0
+Paracetamol Tablets 500 mg,PCT2628,2026-11-25,Dissolution (30 min),%,95.5,80,
+Paracetamol Tablets 500 mg,PCT2628,2026-11-25,Total Impurities,%,0.5,,1.0
+Paracetamol Tablets 500 mg,PCT2628,2026-11-25,Water Content (KF),%,2.2,,5.0
+Paracetamol Tablets 500 mg,PCT2629,2026-12-07,Assay,%,103.8,95.0,105.0
+Paracetamol Tablets 500 mg,PCT2629,2026-12-07,Dissolution (30 min),%,87.8,80,
+Paracetamol Tablets 500 mg,PCT2629,2026-12-07,Total Impurities,%,0.52,,1.0
+Paracetamol Tablets 500 mg,PCT2629,2026-12-07,Water Content (KF),%,3.0,,5.0
+Paracetamol Tablets 500 mg,PCT2630,2026-12-19,Assay,%,103.97,95.0,105.0
+Paracetamol Tablets 500 mg,PCT2630,2026-12-19,Dissolution (30 min),%,92.4,80,
+Paracetamol Tablets 500 mg,PCT2630,2026-12-19,Total Impurities,%,0.39,,1.0
+Paracetamol Tablets 500 mg,PCT2630,2026-12-19,Water Content (KF),%,2.0,,5.0

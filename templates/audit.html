@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}APQR Pilot - Audit Trail{% endblock %}
+{% block content %}
+<div class="flex items-baseline gap-4 mb-1">
+  <h1 class="font-serif text-2xl font-semibold tracking-tight">Audit trail</h1>
+  <!-- HTMX does what it's good at here: button in, HTML banner out, no JS written -->
+  <button hx-get="/audit/verify" hx-target="#verify-banner" hx-swap="innerHTML"
+          class="btn-ghost ml-auto">Verify chain</button>
+</div>
+<p class="text-faint text-sm mb-6">Append-only. Each entry's hash seals the one before it &mdash; edit any row and the chain breaks.</p>
+
+<div id="verify-banner" class="mb-6"></div>
+
+<div class="border border-hairline overflow-x-auto">
+  <table class="results">
+    <thead><tr><th>Time (UTC)</th><th>User</th><th>Action</th><th>Detail</th><th>Entry hash</th></tr></thead>
+    <tbody>
+      {% for entry in entries %}
+      <tr>
+        <td class="num whitespace-nowrap">{{ entry.at }}</td>
+        <td>{{ entry.username }}</td>
+        <td class="{{ 'text-oos font-medium' if 'REJECTED' in entry.action or 'FAILED' in entry.action else 'text-capable' }}">{{ entry.action }}</td>
+        <td class="text-faint">{{ entry.detail }}</td>
+        <td class="num text-faint">{{ entry.entry_hash[:10] }}&hellip;</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
