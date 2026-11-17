@@ -229,7 +229,7 @@ function buildReport(){
     return `<tr class="${st==='oos'?'oos':''}"><td>${esc(p.name)}</td><td>${esc(p.unit)}</td><td class="n">${lsl??'-'}</td><td class="n">${usl??'-'}</td><td class="n">${f2(p.s.m)}</td><td class="n">${f2(p.s.sd)}</td><td class="n">${f2(p.s.min)}</td><td class="n">${f2(p.s.max)}</td><td class="n">${p.s.cpk==null?'n/a':f2(p.s.cpk)}</td><td class="n">${p.oos.length}</td><td><span class="stt ${st}">${st.toUpperCase()}</span></td></tr>`}).join('');
   const chartImg=(()=>{try{return document.getElementById('chart').toDataURL('image/png')}catch(e){return null}})();
   const batchRows=p0.rows.map(r=>`<tr class="${isOOS(r)?'oos':''}"><td>${esc(r.batch)}</td><td>${fmt(r.date)}</td><td class="n">${r.result}</td><td class="n">${r.lsl??''}</td><td class="n">${r.usl??''}</td><td>${isOOS(r)?'OOS':'Pass'}</td></tr>`).join('');
-  const ai=DATA.ai_conclusion?`<div class="rpt-h">AI-assisted review</div><p class="rpt-concl">${esc(DATA.ai_conclusion)}</p>`:'';
+  const ai=DATA.ai_conclusion?`<div class="rpt-h">AI-drafted review</div><p class="rpt-concl">${esc(DATA.ai_conclusion).replace(/\n/g,'<br>')}</p>`:'';
   $('#printreport').innerHTML=`
   <div class="rpt-head">
     <h1>Annual Product Quality Review</h1>
@@ -253,7 +253,7 @@ function buildReport(){
   <table class="rpt"><thead><tr><th>Batch</th><th>Mfg date</th><th class="n">Result</th><th class="n">LSL</th><th class="n">USL</th><th>Status</th></tr></thead><tbody>${batchRows}</tbody></table>
   </div>
   <div class="rpt-h">Conclusion</div>
-  <p class="rpt-concl">${esc($('#concl').textContent)}</p>
+  <p class="rpt-concl">${esc(DATA.conclusion||$('#concl').textContent).replace(/\n/g,'<br>')}</p>
   ${ai}
   <div class="rpt-sign"><div><b>Prepared by</b>Name / Signature / Date</div><div><b>Reviewed by</b>Name / Signature / Date</div><div><b>Approved by</b>Name / Signature / Date</div></div>
   <div class="rpt-foot"><span>${esc(DATA.report_id)}</span><span>APQR Pilot - dummy data for demonstration</span></div>`;
@@ -269,10 +269,13 @@ $('#printbtn').addEventListener('click',doPrint);
 window.addEventListener('beforeprint',()=>{const was=document.documentElement.dataset.theme;document.documentElement.dataset.theme='light';show(cur);buildReport();});
 window.addEventListener('afterprint',()=>{const was=document.documentElement.dataset.theme;});
 show(0);
+if(DATA.conclusion){
+  $('#concl').innerHTML=esc(DATA.conclusion).replace(/\n/g,'<br>');
+}
 if(DATA.ai_conclusion){
   const ai=document.createElement('p');
   ai.style.cssText='margin-top:10px;padding-top:8px;border-top:1px dashed var(--line);font-style:italic;color:var(--mute)';
-  ai.innerHTML='AI review:<br>'+esc(DATA.ai_conclusion).replace(/\n/g,'<br>');
+  ai.innerHTML='AI-drafted review:<br>'+esc(DATA.ai_conclusion).replace(/\n/g,'<br>');
   document.querySelector('.concl').appendChild(ai);
 }
 }

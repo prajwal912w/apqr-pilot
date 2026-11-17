@@ -72,6 +72,40 @@ Tables are created on first run, and a default `admin` user is seeded.
 | `GET /audit/verify` | re-verify the hash chain |
 | `GET /users` | admin user management |
 
+
+## Database tables
+
+| Table | Columns (key ones) | Constraints |
+| --- | --- | --- |
+| `product` | id, name | name unique |
+| `upload` | id, filename, file_hash, uploaded_at | file_hash unique (duplicate-file rejection) |
+| `batch` | id, batch_no, mfg_date, product_id, upload_id | (product_id, batch_no) unique |
+| `result` | id, batch_id, parameter, unit, result, lsl, usl | batch_id -> batch |
+| `user` | id, username, password_hash | username unique |
+| `audit_log` | id, username, action, detail, at, prev_hash, entry_hash | append-only, hash-chained |
+
+There are no edit or delete routes for uploaded data - the only way data changes is a new upload.
+
+## Calculations
+
+- **Pass/OOS**: a result is OOS when it is below LSL or above USL; values exactly on a limit pass. Each row is judged against its own limits, so one-sided specs (only LSL or only USL) work.
+- **SD**: sample standard deviation (`statistics.stdev`).
+- **Cpk**: `min((USL - mean) / 3s, (mean - LSL) / 3s)`; with one limit only the existing side is used. When n < 2 or SD = 0, Cpk is reported as `n/a` instead of a misleading number.
+- **Audit chain**: `sha256(prev_hash | timestamp | username | action | detail)` per entry; `/audit/verify` recomputes the whole chain.
+- **AI conclusion**: the LLM receives only statistics computed by `analysis.py` (stats + OOS batch lists) and is instructed to phrase, never calculate. A rule-based conclusion computed in code always shows, so the app works with no API key.
+
+## Validation rules
+
+Uploads are all-or-nothing: any bad row rejects the whole file with line-numbered errors. Checked: required columns present, product/batch_no/parameter non-empty, result numeric and finite (no NaN/inf), limits numeric with at least one present and LSL <= USL, mfg_date is YYYY-MM-DD, no duplicate (batch, parameter) rows inside one file, file is .csv, UTF-8, under 2 MB, not empty, not a duplicate of a previous upload (SHA-256), and batches must not already exist in the database (clean 409).
+
+## Testing
+
+```bash
+python -m pytest tests/ -v
+```
+
+10 tests cover two-sided and one-sided specs, values exactly on a limit, hand-calculated Cpk, one result, identical results (SD = 0), and the stats fields.
+
 ## Project layout
 
 ```

@@ -2,6 +2,7 @@ import os
 import hashlib
 import csv
 import math
+import math
 from decimal import Decimal
 from flask import Flask, jsonify , request, session, render_template, redirect
 from flask_sqlalchemy import SQLAlchemy
@@ -9,8 +10,6 @@ from sqlalchemy import text, func, Column, Integer, Numeric, String, TEXT, Forei
 from sqlalchemy.engine import URL
 from sqlalchemy.exc import IntegrityError
 from werkzeug.security import check_password_hash, generate_password_hash
-from flask_wtf import CSRFProtect
-from flask_wtf.csrf import generate_csrf
 from datetime import timedelta
 from models import db, Product, Upload, Batch, Result, User, AuditLog
 from datetime import datetime
@@ -24,6 +23,7 @@ app.config['SECRET_KEY'] = os.environ['SECRET_KEY']
 app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 app.config['SESSION_COOKIE_SECURE'] = os.environ.get("SESSION_COOKIE_SECURE", "False") == "True"
+app.config['MAX_CONTENT_LENGTH'] = 2 * 1024 * 1024  # reject uploads over 2 MB
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30)
 
 
@@ -58,11 +58,12 @@ def login_required(view):
 
 def log_action(action, detail):
     username = session.get("username", "anonymous")
+    at = datetime.utcnow()
     last = AuditLog.query.order_by(AuditLog.id.desc()).first()
     prev_hash = last.entry_hash if last else "GENESIS"
-    payload = f"{prev_hash}|{username}|{action}|{detail}"
+    payload = f"{prev_hash}|{at.isoformat()}|{username}|{action}|{detail}"
     entry_hash = hashlib.sha256(payload.encode()).hexdigest()
-    db.session.add(AuditLog(username=username, action=action, detail=detail,
+    db.session.add(AuditLog(username=username, action=action, detail=detail, at=at,
                             prev_hash=prev_hash, entry_hash=entry_hash))
 
 
@@ -93,12 +94,23 @@ def upload_page():
             return {"error": "Missing columns", "details": [f"missing column: {h}" for h in sorted(missing_headers)]}, 400
         errors = []
         data_rows = []
+        seen_rows = {}
         for line_number, row in enumerate(reader, start=2):
             row_errors = []
+            if not (row.get("product") or "").strip():
+                row_errors.append("product is empty")
             if not row.get("batch_no"):
                 row_errors.append("batch_no is empty")
             if not row.get("parameter"):
                 row_errors.append("parameter is empty")
+            bn = (row.get("batch_no") or "").strip()
+            prm = (row.get("parameter") or "").strip()
+            if bn and prm:
+                key = (bn, prm)
+                if key in seen_rows:
+                    row_errors.append(f"duplicate row for batch {bn} / {prm} (first on line {seen_rows[key]})")
+                else:
+                    seen_rows[key] = line_number
             try:
                 result_value = float(row["result"])
                 if not math.isfinite(result_value):
@@ -139,45 +151,42 @@ def upload_page():
         row_count = len(data_rows)
         if row_count == 0:
             return {"error": "CSV has no data rows"}, 400
-        print(f"filename: {file.filename}")
-        print(f"hash: {file_hash}")
-        print(f"rows: {row_count}")
-        upload = Upload(filename=file.filename, file_hash=file_hash)
-        db.session.add(upload)
-        db.session.flush()
-        product_cache = {}
-        batch_cache = {}
-        for row in data_rows:
-            product_name = row["product"].strip()
-            product = product_cache.get(product_name)
-            if product is None:
-                product = Product.query.filter_by(name=product_name).first()
-                if product is None:
-                    product = Product(name=product_name)
-                    db.session.add(product)
-                    db.session.flush()
-                product_cache[product_name] = product
-            key = (product.id, row["batch_no"].strip())
-            batch = batch_cache.get(key)
-            if batch is None:
-                batch = Batch(
-                    batch_no=row["batch_no"].strip(),
-                    mfg_date=datetime.strptime(row["mfg_date"], "%Y-%m-%d").date(),
-                    product_id=product.id,
-                    upload_id=upload.id,
-                )
-                db.session.add(batch)
-                db.session.flush()
-                batch_cache[key] = batch
-            db.session.add(Result(
-        batch_id=batch.id,
-            parameter=row["parameter"].strip(),
-                unit=(row.get("unit") or "").strip(),
-                result=Decimal(row["result"]),
-                lsl=Decimal(row["lsl"]) if row["lsl"].strip() else None,
-                usl=Decimal(row["usl"]) if row["usl"].strip() else None,
-            ))
         try:
+            upload = Upload(filename=file.filename, file_hash=file_hash)
+            db.session.add(upload)
+            db.session.flush()
+            product_cache = {}
+            batch_cache = {}
+            for row in data_rows:
+                product_name = row["product"].strip()
+                product = product_cache.get(product_name)
+                if product is None:
+                    product = Product.query.filter_by(name=product_name).first()
+                    if product is None:
+                        product = Product(name=product_name)
+                        db.session.add(product)
+                        db.session.flush()
+                    product_cache[product_name] = product
+                key = (product.id, row["batch_no"].strip())
+                batch = batch_cache.get(key)
+                if batch is None:
+                    batch = Batch(
+                        batch_no=row["batch_no"].strip(),
+                        mfg_date=datetime.strptime(row["mfg_date"], "%Y-%m-%d").date(),
+                        product_id=product.id,
+                        upload_id=upload.id,
+                    )
+                    db.session.add(batch)
+                    db.session.flush()
+                    batch_cache[key] = batch
+                db.session.add(Result(
+                    batch_id=batch.id,
+                    parameter=row["parameter"].strip(),
+                    unit=(row.get("unit") or "").strip(),
+                    result=Decimal(row["result"]),
+                    lsl=Decimal(row["lsl"]) if row["lsl"].strip() else None,
+                    usl=Decimal(row["usl"]) if row["usl"].strip() else None,
+                ))
             log_action("UPLOAD_ACCEPTED", f"{file.filename}: {row_count} rows, {len(batch_cache)} batches")
             db.session.commit()
         except IntegrityError:
@@ -205,7 +214,7 @@ def summary():
             lsl = next((r.lsl for r, b in rows if r.lsl is not None), None)
             usl = next((r.usl for r, b in rows if r.usl is not None), None)
             stats = compute_stats(values, lsl, usl)
-            oos = [b.batch_no for r, b in rows if check_spec(r.result, lsl, usl) == "OOS"]
+            oos = [b.batch_no for r, b in rows if check_spec(r.result, r.lsl, r.usl) == "OOS"]
             output.append({
                 "product": product.name,
                 "parameter": parameter,
@@ -333,6 +342,36 @@ def users_page():
 def index():
     return redirect("/dashboard")
 
+
+def rule_conclusion(payload):
+    """Written conclusion computed entirely by our code - works with no LLM key."""
+    if not payload["params"]:
+        return None
+    lines = []
+    oos_parts = []
+    for p in payload["params"]:
+        values = [r["result"] for r in p["rows"]]
+        lsl = p["rows"][0]["lsl"]
+        usl = p["rows"][0]["usl"]
+        stats = compute_stats(values, lsl, usl)
+        oos = [r["batch"] for r in p["rows"] if check_spec(r["result"], r["lsl"], r["usl"]) == "OOS"]
+        if oos:
+            oos_parts.append(f"{p['name']} ({', '.join(oos)})")
+        cpk = stats["cpk"]
+        if cpk is None:
+            lines.append(f"{p['name']}: Cpk n/a (too little data or zero variation).")
+        elif cpk < 1.0:
+            lines.append(f"{p['name']}: Cpk {cpk} - process is not consistently capable of meeting spec.")
+        elif cpk < 1.33:
+            lines.append(f"{p['name']}: Cpk {cpk} - marginally capable, watch this parameter.")
+        else:
+            lines.append(f"{p['name']}: Cpk {cpk} - capable of meeting spec.")
+    if oos_parts:
+        lines.insert(0, "Out-of-specification results in " + "; ".join(oos_parts) + ".")
+    else:
+        lines.insert(0, "All results within specification limits.")
+    return "\n".join("- " + line for line in lines)
+
 def apqr_payload():
     # everything the dashboard page needs, in the shape its script expects:
     # {product, report_id, file_hash, params:[{name, unit, rows:[...]}]}
@@ -367,6 +406,7 @@ def apqr_payload():
         "file_hash": file_hash[:12],
         "params": params,
     }
+    payload["conclusion"] = rule_conclusion(payload)
     payload["ai_conclusion"] = llm_conclusion(payload)
     return payload
 
@@ -375,19 +415,30 @@ def llm_conclusion(payload):
     key = os.environ.get("GROQ_API_KEY")
     if not key or not payload["params"]:
         return None
+    # every number below is computed by OUR code (compute_stats/check_spec) -
+    # the model only phrases them, it never calculates or invents values
+    parameters = []
+    for p in payload["params"]:
+        values = [r["result"] for r in p["rows"]]
+        lsl = p["rows"][0]["lsl"]
+        usl = p["rows"][0]["usl"]
+        stats = compute_stats(values, lsl, usl)
+        oos = [r["batch"] for r in p["rows"] if check_spec(r["result"], r["lsl"], r["usl"]) == "OOS"]
+        parameters.append({
+            "name": p["name"], "unit": p["unit"], "lsl": lsl, "usl": usl,
+            "stats": stats, "oos_batches": oos,
+        })
     summary = {
         "product": payload["product"],
         "batches": len(payload["params"][0]["rows"]),
-        "parameters": [{
-            "name": p["name"], "unit": p["unit"],
-            "results": [r["result"] for r in p["rows"]],
-            "lsl": p["rows"][0]["lsl"], "usl": p["rows"][0]["usl"],
-        } for p in payload["params"]],
+        "parameters": parameters,
     }
     prompt = ("You are a pharmaceutical quality reviewer writing the overall conclusion of an Annual Product Quality Review. "
-              "Given the batch results below as JSON, write 3-4 short bullet points, one per line, each starting with '- ': "
-              "whether the process is in a state of control, any out-of-specification results with batch numbers, "
-              "and any trend worth watching. Quote result values exactly as they appear in the data. No filler.\n\n" + json.dumps(summary))
+              "Use only the calculated statistics below - they were computed by the application code, so never recalculate or invent numbers. "
+              "Write 3-4 short bullet points, one per line, each starting with '- ': whether the process is in a state of control, "
+              "any out-of-specification batches named in oos_batches, any parameter with Cpk below 1.0, "
+              "and any trend worth watching. Name batches exactly as they appear in oos_batches. "
+              "Plain text only, no markdown, no asterisks. Quote values exactly as given. No filler.\n\n" + json.dumps(summary))
     model = os.environ.get("GROQ_MODEL", "llama-3.3-70b-versatile")
     req = urllib.request.Request(
         "https://api.groq.com/openai/v1/chat/completions",
@@ -396,7 +447,7 @@ def llm_conclusion(payload):
     try:
         with urllib.request.urlopen(req, timeout=15) as resp:
             out = json.loads(resp.read())
-        return out["choices"][0]["message"]["content"].strip()
+        return out["choices"][0]["message"]["content"].strip().replace("**", "")
     except Exception as e:
         print("llm_conclusion failed:", e)
         return None
@@ -431,7 +482,7 @@ def audit_verify():
     entries = AuditLog.query.order_by(AuditLog.id).all()
     prev = "GENESIS"
     for e in entries:
-        payload = f"{prev}|{e.username}|{e.action}|{e.detail}"
+        payload = f"{prev}|{e.at.isoformat()}|{e.username}|{e.action}|{e.detail}"
         expected = hashlib.sha256(payload.encode()).hexdigest()
         if e.prev_hash != prev or e.entry_hash != expected:
             return (f'<div class="verify-banner fail">Chain broken at entry #{e.id} '
