@@ -24,6 +24,7 @@
 /* fetch instead of HTMX here: file upload plus structured JSON errors is
    simpler as one fetch than teaching HTMX to carry multipart + parse JSON. */
 const box = document.getElementById('result');
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 document.getElementById('upload-form').addEventListener('submit', async (e) => {
   e.preventDefault();
   box.innerHTML = '<p class="text-sm text-faint">Validating&hellip;</p>';
@@ -31,19 +32,19 @@ document.getElementById('upload-form').addEventListener('submit', async (e) => {
     const res = await fetch('/upload', { method: 'POST', body: new FormData(e.target) });
     const data = await res.json();
     if (res.ok) {
-      box.innerHTML = `<div class="verify-banner ok">${data.message}. Saved to the review period.</div>`;
+      box.innerHTML = `<div class="verify-banner ok">${esc(data.message)}. Saved to the review period.</div>`;
       return;
     }
     if (res.status === 409) {
-      box.innerHTML = `<div class="verify-banner warn">${data.error}. The SHA-256 hash matched an earlier upload, so it was rejected as a duplicate.</div>`;
+      box.innerHTML = `<div class="verify-banner warn">${esc(data.error)}. The SHA-256 hash matched an earlier upload, so it was rejected as a duplicate.</div>`;
       return;
     }
     if (data.details) {
       const rows = data.details.map(d => typeof d === 'string'
-        ? `<tr><td colspan="4">${d}</td></tr>`
-        : `<tr><td class="num">${d.line}</td><td class="font-mono text-xs">${d.column}</td><td>${d.problem}</td><td class="text-faint">${d.hint}</td></tr>`).join('');
+        ? `<tr><td colspan="4">${esc(d)}</td></tr>`
+        : `<tr><td class="num">${esc(d.line)}</td><td class="font-mono text-xs">${esc(d.column)}</td><td>${esc(d.problem)}</td><td class="text-faint">${esc(d.hint)}</td></tr>`).join('');
       box.innerHTML = `
-        <p class="text-sm mb-3"><span class="badge oos">Rejected</span> ${data.details.length} problem(s) found. Nothing was saved &mdash; fix the CSV and upload it again.</p>
+        <p class="text-sm mb-3"><span class="badge oos">Rejected</span> ${esc(data.details.length)} problem(s) found. Nothing was saved &mdash; fix the CSV and upload it again.</p>
         <div class="border border-hairline overflow-x-auto">
           <table class="results">
             <thead><tr><th class="num">Line</th><th>Column</th><th>Problem</th><th>Suggested fix</th></tr></thead>
@@ -52,7 +53,7 @@ document.getElementById('upload-form').addEventListener('submit', async (e) => {
         </div>`;
       return;
     }
-    box.innerHTML = `<div class="verify-banner fail">${data.error || 'Upload failed.'}</div>`;
+    box.innerHTML = `<div class="verify-banner fail">${esc(data.error || 'Upload failed.')}</div>`;
   } catch (err) {
     box.innerHTML = '<div class="verify-banner fail">Upload failed - is the server running?</div>';
   }

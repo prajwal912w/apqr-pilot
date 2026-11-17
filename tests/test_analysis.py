@@ -61,3 +61,79 @@ def test_stats_fields():
     assert stats["count"] == 3
     assert stats["min"] == 96.86
     assert stats["max"] == 103.97
+
+
+# --- validate_row: csv cleaning and rejection ---
+
+def make_row(**kw):
+    base = {"product": "Paracetamol Tablets 500 mg", "batch_no": "PCT2601",
+            "parameter": "Assay", "unit": "%", "result": "99.5",
+            "lsl": "95", "usl": "105", "mfg_date": "2026-01-05"}
+    base.update(kw)
+    return base
+
+def test_valid_row_passes():
+    from analysis import validate_row
+    errors, cleaned = validate_row(make_row())
+    assert errors == []
+    assert cleaned["result"] == 99.5
+    assert cleaned["batch_no"] == "PCT2601"
+
+def test_whitespace_only_batch_rejected():
+    from analysis import validate_row
+    errors, _ = validate_row(make_row(batch_no="   "))
+    assert any("batch_no" in e for e in errors)
+
+def test_missing_cells_do_not_crash():
+    from analysis import validate_row
+    # DictReader gives None for missing cells in short rows
+    errors, cleaned = validate_row(make_row(lsl=None, usl=None))
+    assert any("no specification limit" in e for e in errors)
+    assert cleaned["lsl"] is None and cleaned["usl"] is None
+
+def test_missing_usl_cell_is_one_sided_not_a_crash():
+    from analysis import validate_row
+    errors, cleaned = validate_row(make_row(usl=None))
+    assert errors == []
+    assert cleaned["usl"] is None and cleaned["lsl"] == 95.0
+
+def test_nan_and_inf_rejected():
+    from analysis import validate_row
+    errors, _ = validate_row(make_row(result="nan"))
+    assert any("finite" in e for e in errors)
+    errors, _ = validate_row(make_row(result="inf"))
+    assert any("finite" in e for e in errors)
+
+def test_lsl_above_usl_rejected():
+    from analysis import validate_row
+    errors, _ = validate_row(make_row(lsl="105", usl="95"))
+    assert any("greater" in e for e in errors)
+
+def test_bad_date_rejected():
+    from analysis import validate_row
+    errors, _ = validate_row(make_row(mfg_date="05-01-2026"))
+    assert any("mfg_date" in e for e in errors)
+
+
+# --- parameter_stats: one source of truth for cpk ---
+
+def test_spec_change_makes_cpk_not_comparable():
+    from analysis import parameter_stats
+    values = [98, 100, 102, 100]
+    limits = [(95, 105), (95, 105), (90, 110), (90, 110)]
+    stats = parameter_stats(values, limits)
+    assert stats["spec_changed"] is True
+    assert stats["cpk"] is None  # not comparable, not silently first/last
+
+def test_stable_spec_keeps_cpk():
+    from analysis import parameter_stats
+    values = [98, 100, 102, 100]
+    stats = parameter_stats(values, [(95, 105)] * 4)
+    assert stats["spec_changed"] is False
+    assert stats["cpk"] is not None
+
+def test_one_sided_spec_in_parameter_stats():
+    from analysis import parameter_stats
+    stats = parameter_stats([0.2, 0.3, 0.25, 0.28], [(None, 1.0)] * 4)
+    assert stats["cpk"] is not None
+    assert stats["lsl"] is None and stats["usl"] == 1.0

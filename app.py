@@ -1,8 +1,6 @@
 import os
 import hashlib
 import csv
-import math
-import math
 from decimal import Decimal
 from flask import Flask, jsonify , request, session, render_template, redirect
 from flask_sqlalchemy import SQLAlchemy
@@ -13,7 +11,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from datetime import timedelta
 from models import db, Product, Upload, Batch, Result, User, AuditLog
 from datetime import datetime
-from analysis import check_spec, compute_stats
+from analysis import check_spec, parameter_stats, validate_row
 from functools import wraps
 
 
@@ -22,7 +20,7 @@ app = Flask(__name__, static_url_path='')
 app.config['SECRET_KEY'] = os.environ['SECRET_KEY']
 app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
-app.config['SESSION_COOKIE_SECURE'] = os.environ.get("SESSION_COOKIE_SECURE", "False") == "True"
+app.config['SESSION_COOKIE_SECURE'] = os.environ.get("SESSION_COOKIE_SECURE", "True") == "True"  # set False for local http
 app.config['MAX_CONTENT_LENGTH'] = 2 * 1024 * 1024  # reject uploads over 2 MB
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30)
 
@@ -43,7 +41,10 @@ db.init_app(app)
 with app.app_context():
     db.create_all()
     if not User.query.filter_by(username="admin").first():
-        db.session.add(User(username="admin", password_hash=generate_password_hash(os.environ.get("ADMIN_PASSWORD", "apqr123"))))
+        admin_password = os.environ.get("ADMIN_PASSWORD")
+        if not admin_password:
+            raise RuntimeError("Set the ADMIN_PASSWORD environment variable - the app has no default admin password.")
+        db.session.add(User(username="admin", password_hash=generate_password_hash(admin_password)))
         db.session.commit()
 
 
@@ -95,55 +96,27 @@ def upload_page():
         errors = []
         data_rows = []
         seen_rows = {}
+        batch_dates = {}
         for line_number, row in enumerate(reader, start=2):
-            row_errors = []
-            if not (row.get("product") or "").strip():
-                row_errors.append("product is empty")
-            if not row.get("batch_no"):
-                row_errors.append("batch_no is empty")
-            if not row.get("parameter"):
-                row_errors.append("parameter is empty")
-            bn = (row.get("batch_no") or "").strip()
-            prm = (row.get("parameter") or "").strip()
+            row_errors, cleaned = validate_row(row)
+            bn, prm = cleaned["batch_no"], cleaned["parameter"]
             if bn and prm:
                 key = (bn, prm)
                 if key in seen_rows:
                     row_errors.append(f"duplicate row for batch {bn} / {prm} (first on line {seen_rows[key]})")
                 else:
                     seen_rows[key] = line_number
-            try:
-                result_value = float(row["result"])
-                if not math.isfinite(result_value):
-                    row_errors.append(f"result '{row.get('result')}' is not a finite number")
-            except (ValueError, TypeError):
-                row_errors.append(f"result '{row.get('result')}' is not a number")
-            lsl_value = None
-            usl_value = None
-            for col in ("lsl", "usl"):
-                value = row.get(col)
-                if value and value.strip():
-                    try:
-                        parsed = float(value)
-                        if not math.isfinite(parsed):
-                            row_errors.append(f"{col} '{value}' is not a finite number")
-                        elif col == "lsl":
-                            lsl_value = parsed
-                        else:
-                            usl_value = parsed
-                    except ValueError:
-                        row_errors.append(f"{col} '{value}' is not a number")
-            if lsl_value is None and usl_value is None:
-                row_errors.append("no specification limit (need lsl or usl)")
-            if lsl_value is not None and usl_value is not None and lsl_value > usl_value:
-                row_errors.append(f"lsl {lsl_value} is greater than usl {usl_value}")
-            try:
-                datetime.strptime(row["mfg_date"], "%Y-%m-%d")
-            except (ValueError, TypeError):
-                row_errors.append(f"mfg_date '{row.get('mfg_date')}' is not YYYY-MM-DD")
+            if bn and cleaned["date"] is not None:
+                key = (cleaned["product"], bn)
+                previous = batch_dates.get(key)
+                if previous is None:
+                    batch_dates[key] = cleaned["date"]
+                elif previous != cleaned["date"]:
+                    row_errors.append(f"batch {bn} has inconsistent mfg_date ({previous} on an earlier line, {cleaned['date']} here)")
             for msg in row_errors:
                 errors.append(f"line {line_number}: {msg}")
             if not row_errors:
-                data_rows.append(row)
+                data_rows.append(cleaned)
         if errors:
             log_action("UPLOAD_REJECTED", f"invalid csv {file.filename}: {len(errors)} errors")
             db.session.commit()
@@ -158,7 +131,7 @@ def upload_page():
             product_cache = {}
             batch_cache = {}
             for row in data_rows:
-                product_name = row["product"].strip()
+                product_name = row["product"]
                 product = product_cache.get(product_name)
                 if product is None:
                     product = Product.query.filter_by(name=product_name).first()
@@ -167,12 +140,12 @@ def upload_page():
                         db.session.add(product)
                         db.session.flush()
                     product_cache[product_name] = product
-                key = (product.id, row["batch_no"].strip())
+                key = (product.id, row["batch_no"])
                 batch = batch_cache.get(key)
                 if batch is None:
                     batch = Batch(
-                        batch_no=row["batch_no"].strip(),
-                        mfg_date=datetime.strptime(row["mfg_date"], "%Y-%m-%d").date(),
+                        batch_no=row["batch_no"],
+                        mfg_date=row["date"],
                         product_id=product.id,
                         upload_id=upload.id,
                     )
@@ -181,11 +154,11 @@ def upload_page():
                     batch_cache[key] = batch
                 db.session.add(Result(
                     batch_id=batch.id,
-                    parameter=row["parameter"].strip(),
-                    unit=(row.get("unit") or "").strip(),
-                    result=Decimal(row["result"]),
-                    lsl=Decimal(row["lsl"]) if row["lsl"].strip() else None,
-                    usl=Decimal(row["usl"]) if row["usl"].strip() else None,
+                    parameter=row["parameter"],
+                    unit=row["unit"],
+                    result=Decimal(row["result_text"]),
+                    lsl=Decimal(row["lsl_text"]) if row["lsl_text"] else None,
+                    usl=Decimal(row["usl_text"]) if row["usl_text"] else None,
                 ))
             log_action("UPLOAD_ACCEPTED", f"{file.filename}: {row_count} rows, {len(batch_cache)} batches")
             db.session.commit()
@@ -210,10 +183,8 @@ def summary():
                     .join(Batch, Result.batch_id == Batch.id)
                     .filter(Batch.product_id == product.id, Result.parameter == parameter)
                     .order_by(Batch.mfg_date).all())
-            values = [r.result for r, b in rows]
-            lsl = next((r.lsl for r, b in rows if r.lsl is not None), None)
-            usl = next((r.usl for r, b in rows if r.usl is not None), None)
-            stats = compute_stats(values, lsl, usl)
+            values = [float(r.result) for r, b in rows]
+            stats = parameter_stats(values, [(r.lsl, r.usl) for r, b in rows])
             oos = [b.batch_no for r, b in rows if check_spec(r.result, r.lsl, r.usl) == "OOS"]
             output.append({
                 "product": product.name,
@@ -350,16 +321,13 @@ def rule_conclusion(payload):
     lines = []
     oos_parts = []
     for p in payload["params"]:
-        values = [r["result"] for r in p["rows"]]
-        lsl = p["rows"][0]["lsl"]
-        usl = p["rows"][0]["usl"]
-        stats = compute_stats(values, lsl, usl)
-        oos = [r["batch"] for r in p["rows"] if check_spec(r["result"], r["lsl"], r["usl"]) == "OOS"]
-        if oos:
-            oos_parts.append(f"{p['name']} ({', '.join(oos)})")
+        stats = p["stats"]
+        if p["oos_batches"]:
+            oos_parts.append(f"{p['name']} ({', '.join(p['oos_batches'])})")
         cpk = stats["cpk"]
         if cpk is None:
-            lines.append(f"{p['name']}: Cpk n/a (too little data or zero variation).")
+            reason = "specification changed during the period" if stats.get("spec_changed") else "too little data or zero variation"
+            lines.append(f"{p['name']}: Cpk n/a ({reason}).")
         elif cpk < 1.0:
             lines.append(f"{p['name']}: Cpk {cpk} - process is not consistently capable of meeting spec.")
         elif cpk < 1.33:
@@ -391,6 +359,10 @@ def apqr_payload():
             params.append({
                 "name": parameter,
                 "unit": rows[0][0].unit if rows else "",
+                "stats": parameter_stats([float(r.result) for r, b in rows],
+                                         [(r.lsl, r.usl) for r, b in rows]),
+                "oos_batches": [b.batch_no for r, b in rows
+                                if check_spec(r.result, r.lsl, r.usl) == "OOS"],
                 "rows": [{
                     "batch": b.batch_no,
                     "date": b.mfg_date.isoformat(),
@@ -417,17 +389,11 @@ def llm_conclusion(payload):
         return None
     # every number below is computed by OUR code (compute_stats/check_spec) -
     # the model only phrases them, it never calculates or invents values
-    parameters = []
-    for p in payload["params"]:
-        values = [r["result"] for r in p["rows"]]
-        lsl = p["rows"][0]["lsl"]
-        usl = p["rows"][0]["usl"]
-        stats = compute_stats(values, lsl, usl)
-        oos = [r["batch"] for r in p["rows"] if check_spec(r["result"], r["lsl"], r["usl"]) == "OOS"]
-        parameters.append({
-            "name": p["name"], "unit": p["unit"], "lsl": lsl, "usl": usl,
-            "stats": stats, "oos_batches": oos,
-        })
+    parameters = [{
+        "name": p["name"], "unit": p["unit"],
+        "lsl": p["stats"]["lsl"], "usl": p["stats"]["usl"],
+        "stats": p["stats"], "oos_batches": p["oos_batches"],
+    } for p in payload["params"]]
     summary = {
         "product": payload["product"],
         "batches": len(payload["params"][0]["rows"]),

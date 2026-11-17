@@ -45,7 +45,7 @@ class Result(db.Model):
 
 
 class User(db.Model):
-    _tablename_ = 'users'
+    # table name defaults to 'user' - that is what the live database already has
     id = Column(Integer, primary_key=True)
     username = Column(String, nullable=False, unique=True)
     password_hash = Column(String, nullable=False)

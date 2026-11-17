@@ -159,7 +159,9 @@ function stats(rows){const v=rows.map(r=>r.result),n=v.length,m=v.reduce((a,b)=>
   return{n,m,sd,min:Math.min(...v),max:Math.max(...v),cpk:c.length&&sd>0?Math.min(...c):null}}
 function run(v){let best=1,bd=0,bs=0,cur=1,d=0;for(let i=1;i<v.length;i++){const s=Math.sign(v[i]-v[i-1]);
   if(s&&s===d)cur++;else{cur=s?2:1;d=s}if(cur>best){best=cur;bd=d;bs=i-cur+1}}return{len:best,dir:bd,start:bs}}
-DATA.params.forEach(p=>{p.s=stats(p.rows);p.oos=p.rows.filter(isOOS);p.tr=run(p.rows.map(r=>r.result));
+/* stats come from analysis.py (single source of truth); stats() below is only the demo-preview fallback */
+const py=p=>p.stats?{n:p.stats.count,m:p.stats.mean,sd:p.stats.std,min:p.stats.min,max:p.stats.max,cpk:p.stats.cpk}:stats(p.rows);
+DATA.params.forEach(p=>{p.s=py(p);p.oos=p.rows.filter(isOOS);p.tr=run(p.rows.map(r=>r.result));
   p.trend=p.tr.len>=6;p.state=p.oos.length?'oos':p.trend?'trend':'pass';
   p.label={oos:p.oos.length+' OOS',trend:(p.tr.dir>0?'Rising':'Falling')+' trend, '+p.tr.len+' batches',pass:'Pass'}[p.state]});
 DATA.params.sort((a,b)=>['oos','trend','pass'].indexOf(a.state)-['oos','trend','pass'].indexOf(b.state));
@@ -183,10 +185,11 @@ let chart,cur=0;
 function show(i){cur=i;const p=DATA.params[i],s=p.s,rows=p.rows;
   document.querySelectorAll('.row').forEach((b,j)=>b.setAttribute('aria-pressed',j==i));
   $('#pname').textContent=p.name;
-  const lim=[rows.at(-1).lsl!=null?'LSL '+rows.at(-1).lsl:'',rows.at(-1).usl!=null?'USL '+rows.at(-1).usl:''].filter(Boolean).join(', ');
-  $('#psub').textContent=`${lim} (${p.unit}), ${rows.at(-1).lsl!=null&&rows.at(-1).usl!=null?'two-sided':'one-sided'} limit`;
+  const sp=p.stats||{lsl:rows.at(-1).lsl,usl:rows.at(-1).usl};
+  const lim=[sp.lsl!=null?'LSL '+sp.lsl:'',sp.usl!=null?'USL '+sp.usl:''].filter(Boolean).join(', ');
+  $('#psub').textContent=`${lim} (${p.unit}), ${sp.lsl!=null&&sp.usl!=null?'two-sided':'one-sided'} limit`;
   $('#stats').innerHTML=[['Batches',s.n],['Mean',f2(s.m)],['Std dev',f2(s.sd)],['Min',f2(s.min)],['Max',f2(s.max)],['Cpk',f2(s.cpk)]].map(([k,v])=>`<div class="stat"><span>${k}</span><b>${v}</b></div>`).join('');
-  $('#note').textContent=s.cpk==null?'':s.cpk<1?'Cpk below 1.00: the process is not capable of meeting this limit consistently.':s.cpk<1.33?'Cpk between 1.00 and 1.33: marginal capability.':'Cpk at or above 1.33: capable.';
+  $('#note').textContent=p.stats&&p.stats.spec_changed?'The specification changed during this period, so a single Cpk is not comparable.':s.cpk==null?'':s.cpk<1?'Cpk below 1.00: the process is not capable of meeting this limit consistently.':s.cpk<1.33?'Cpk between 1.00 and 1.33: marginal capability.':'Cpk at or above 1.33: capable.';
   const t=p.trend?` Results have moved ${p.tr.dir>0?'upward':'downward'} for ${p.tr.len} consecutive batches (from ${rows[p.tr.start].batch}); review before a limit is reached.`:'';
   $('#concl').textContent=`${p.name}: ${s.n} batches, mean ${f2(s.m)} ${p.unit}, SD ${f2(s.sd)}, range ${f2(s.min)} to ${f2(s.max)}. `+
     (p.oos.length?`${p.oos.length} OOS result${p.oos.length>1?'s':''} (${p.oos.map(r=>r.batch).join(', ')}); investigation required. `:'All results are within specification. ')+`Cpk is ${f2(s.cpk)}.`+t;
