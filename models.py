@@ -1,9 +1,9 @@
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import Column, Integer, String, Numeric, Date, DateTime, ForeignKey, UniqueConstraint, func
+from sqlalchemy import (Column, Integer, String, Numeric, Date, DateTime, ForeignKey,
+                        UniqueConstraint, CheckConstraint, func)
 
 
 db = SQLAlchemy()
-
 
 
 class Product(db.Model):
@@ -12,14 +12,14 @@ class Product(db.Model):
     name = Column(String, nullable=False, unique=True)
 
 
-
 class Upload(db.Model):
     __tablename__ = 'uploads'
     id = Column(Integer, primary_key=True)
     filename = Column(String, nullable=False)
     file_hash = Column(String(64), nullable=False, unique=True)
     uploaded_at = Column(DateTime, nullable=False, server_default=func.now())
-
+    # who uploaded the file (nullable only because older rows pre-date this column)
+    uploaded_by = Column(Integer, ForeignKey('user.id'), nullable=True)
 
 
 class Batch(db.Model):
@@ -32,7 +32,6 @@ class Batch(db.Model):
     __table_args__ = (UniqueConstraint('product_id', 'batch_no'),)
 
 
-
 class Result(db.Model):
     __tablename__ = 'results'
     id = Column(Integer, primary_key=True)
@@ -42,6 +41,12 @@ class Result(db.Model):
     result = Column(Numeric, nullable=False)
     lsl = Column(Numeric, nullable=True)
     usl = Column(Numeric, nullable=True)
+    # constraint names must match schema.sql, which adds them to existing databases
+    __table_args__ = (
+        UniqueConstraint('batch_id', 'parameter', name='results_batch_param_uq'),
+        CheckConstraint('lsl IS NOT NULL OR usl IS NOT NULL', name='results_has_limit'),
+        CheckConstraint('lsl IS NULL OR usl IS NULL OR lsl <= usl', name='results_lsl_le_usl'),
+    )
 
 
 class User(db.Model):
