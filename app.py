@@ -62,7 +62,9 @@ def log_action(action, detail):
     at = datetime.utcnow()
     last = AuditLog.query.order_by(AuditLog.id.desc()).first()
     prev_hash = last.entry_hash if last else "GENESIS"
-    payload = f"{prev_hash}|{at.isoformat()}|{username}|{action}|{detail}"
+    # the server secret goes into every hash: someone with only database
+    # access cannot recompute the chain after altering it
+    payload = f"{app.config['SECRET_KEY']}|{prev_hash}|{at.isoformat()}|{username}|{action}|{detail}"
     entry_hash = hashlib.sha256(payload.encode()).hexdigest()
     db.session.add(AuditLog(username=username, action=action, detail=detail, at=at,
                             prev_hash=prev_hash, entry_hash=entry_hash))
@@ -340,10 +342,13 @@ def rule_conclusion(payload):
         lines.insert(0, "All results within specification limits.")
     return "\n".join("- " + line for line in lines)
 
-def apqr_payload():
+def apqr_payload(product_name=None):
     # everything the dashboard page needs, in the shape its script expects:
     # {product, report_id, file_hash, params:[{name, unit, rows:[...]}]}
-    product = Product.query.order_by(Product.id).first()
+    if product_name:
+        product = Product.query.filter_by(name=product_name).first()
+    else:
+        product = Product.query.order_by(Product.id).first()
     latest = Upload.query.order_by(Upload.id.desc()).first()
     params = []
     if product:
@@ -374,6 +379,7 @@ def apqr_payload():
     file_hash = latest.file_hash if latest else "DRAFT"
     payload = {
         "product": product.name if product else "No data yet",
+        "products": [p.name for p in Product.query.order_by(Product.id).all()],
         "report_id": f"APQR-{datetime.now().year}-{file_hash[:8].upper()}",
         "file_hash": file_hash[:12],
         "params": params,
@@ -421,7 +427,7 @@ def llm_conclusion(payload):
 @app.route("/dashboard")
 @login_required
 def dashboard():
-    return render_template("dashboard.html", data=apqr_payload())
+    return render_template("dashboard.html", data=apqr_payload(request.args.get("product")))
 
 @app.route("/api/results")
 @login_required
@@ -448,7 +454,7 @@ def audit_verify():
     entries = AuditLog.query.order_by(AuditLog.id).all()
     prev = "GENESIS"
     for e in entries:
-        payload = f"{prev}|{e.at.isoformat()}|{e.username}|{e.action}|{e.detail}"
+        payload = f"{app.config['SECRET_KEY']}|{prev}|{e.at.isoformat()}|{e.username}|{e.action}|{e.detail}"
         expected = hashlib.sha256(payload.encode()).hexdigest()
         if e.prev_hash != prev or e.entry_hash != expected:
             return (f'<div class="verify-banner fail">Chain broken at entry #{e.id} '

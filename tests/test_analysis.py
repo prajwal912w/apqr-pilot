@@ -137,3 +137,29 @@ def test_one_sided_spec_in_parameter_stats():
     stats = parameter_stats([0.2, 0.3, 0.25, 0.28], [(None, 1.0)] * 4)
     assert stats["cpk"] is not None
     assert stats["lsl"] is None and stats["usl"] == 1.0
+
+
+# --- validate_row: plausibility ---
+
+def test_empty_unit_rejected():
+    from analysis import validate_row
+    errors, _ = validate_row(make_row(unit="  "))
+    assert any("unit" in e for e in errors)
+
+def test_negative_result_rejected():
+    from analysis import validate_row
+    errors, _ = validate_row(make_row(result="-5", lsl="", usl="1.0"))
+    assert any("negative" in e for e in errors)
+
+def test_implausible_result_rejected():
+    from analysis import validate_row
+    # 250% against a usl of 1.0 is a data error, not a process result
+    errors, _ = validate_row(make_row(parameter="Total Impurities", result="250", lsl="", usl="1.0"))
+    assert any("implausible" in e for e in errors)
+
+def test_legit_oos_near_the_limit_still_passes():
+    from analysis import validate_row
+    # 106.3 against a 95-105 spec is a real OOS result, so validation accepts it
+    errors, cleaned = validate_row(make_row(result="106.3"))
+    assert errors == []
+    assert cleaned["result"] == 106.3

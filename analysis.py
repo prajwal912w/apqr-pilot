@@ -88,6 +88,8 @@ def validate_row(row):
         errors.append("batch_no is empty")
     if not cleaned["parameter"]:
         errors.append("parameter is empty")
+    if not cleaned["unit"]:
+        errors.append("unit is empty")
 
     def parse_number(text, column):
         if text == "":
@@ -114,6 +116,16 @@ def validate_row(row):
     if (cleaned["lsl"] is not None and cleaned["usl"] is not None
             and cleaned["lsl"] > cleaned["usl"]):
         errors.append(f"lsl {cleaned['lsl']} is greater than usl {cleaned['usl']}")
+    # plausibility: a real OOS sits near its limit; something wildly past it
+    # is a data-entry error, not a process result
+    result = cleaned["result"]
+    if result is not None:
+        if result < 0:
+            errors.append(f"result {result} is negative - measurements cannot be negative")
+        elif cleaned["usl"] is not None and cleaned["usl"] > 0 and result > 10 * cleaned["usl"]:
+            errors.append(f"result {result} is implausible (more than 10x the usl of {cleaned['usl']})")
+        elif cleaned["lsl"] is not None and cleaned["lsl"] > 0 and result < cleaned["lsl"] / 10:
+            errors.append(f"result {result} is implausible (less than a tenth of the lsl of {cleaned['lsl']})")
     try:
         cleaned["date"] = datetime.strptime(cleaned["mfg_date"], "%Y-%m-%d").date()
     except ValueError:

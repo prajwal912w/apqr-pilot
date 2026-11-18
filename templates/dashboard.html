@@ -107,6 +107,16 @@ footer{margin-top:40px;color:var(--mute);font-size:12px;border-top:1px solid var
 </header>
 <main>
   <h1 id="prod"></h1>
+  {% if data.products and data.products|length > 1 %}
+  <p class="period" style="margin-bottom:8px">Product:
+    <select id="prodsel" onchange="location='/dashboard?product='+encodeURIComponent(this.value)"
+            style="font:inherit;background:var(--paper);color:var(--ink);border:1px solid var(--rule);padding:4px 8px">
+      {% for p in data.products %}
+      <option value="{{ p }}" {% if p == data.product %}selected{% endif %}>{{ p }}</option>
+      {% endfor %}
+    </select>
+  </p>
+  {% endif %}
   <p class="period" id="period"></p>
   <p class="lede" id="lede"></p>
   <div class="grid">

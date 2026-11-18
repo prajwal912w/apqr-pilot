@@ -23,7 +23,7 @@ for i in range(30):
     rows.append([p, batch, d, "Water Content (KF)", "%", water, "", 5.0])
 
 # 3 deliberate OOS
-rows[10][5] = 106.3   # assay above USL
+rows[8][5] = 106.3    # PCT2603 assay, just above the 105 USL
 rows[21][5] = 74.8    # dissolution below LSL
 rows[34][5] = 1.12    # impurities above USL
 
